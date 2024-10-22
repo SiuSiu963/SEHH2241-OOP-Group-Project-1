@@ -48,7 +48,7 @@ public class Withdrawal extends Transaction
     {
         amount = displayMenuOfAmounts();
         
-        if (amount != CANCELED)
+        if (amount != CANCELED) //genius!!
         {
             availableBalance = 
                 bankDatabase.getAvailableBalance(getAccountNumber(), accountType);
@@ -123,7 +123,7 @@ public class Withdrawal extends Transaction
                break;
             default: // the user did not enter a value from 1-6
                screen.displayMessageLine( 
-                  "\nIvalid selection. Try again." );
+                  "\nInvalid selection. Try again." );
          } // end switch
       } // end while
 
