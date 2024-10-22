@@ -13,26 +13,37 @@ public class BalanceInquiry extends Transaction
    // performs the transaction
    public void execute()
    {
-      // get references to bank database and screen
-      BankDatabase bankDatabase = getBankDatabase();
-      Screen screen = getScreen();
-
-      // get the available balance for the account involved
-      double availableBalance = 
-         bankDatabase.getAvailableBalance( getAccountNumber() );
-
-      // get the total balance for the account involved
-      double totalBalance = 
-         bankDatabase.getTotalBalance( getAccountNumber() );
-      
-      // display the balance information on the screen
-      screen.displayMessageLine( "\nBalance Information:" );
-      screen.displayMessage( " - Available balance: " ); 
-      screen.displayDollarAmount( availableBalance );
-      screen.displayMessage( "\n - Total balance:     " );
-      screen.displayDollarAmount( totalBalance );
-      screen.displayMessageLine( "" );
-   } // end method execute
+       // get references to bank database and screen
+       BankDatabase bankDatabase = getBankDatabase();
+       Screen screen = getScreen();
+   
+       // get balances for savings account
+       double availableBalanceSavings = 
+           bankDatabase.getAvailableBalance(getAccountNumber(), 0);
+       double totalBalanceSavings = 
+           bankDatabase.getTotalBalance(getAccountNumber(), 0);
+           
+       // get balances for cheque account
+       double availableBalanceCheque = 
+           bankDatabase.getAvailableBalance(getAccountNumber(), 1);
+       double totalBalanceCheque = 
+           bankDatabase.getTotalBalance(getAccountNumber(), 1);
+       
+       // display the balance information on the screen
+       screen.displayMessageLine("\nBalance Information:");
+       screen.displayMessageLine("\nSavings Account:");
+       screen.displayMessage(" - Available balance: "); 
+       screen.displayDollarAmount(availableBalanceSavings);
+       screen.displayMessage("\n - Total balance:     ");
+       screen.displayDollarAmount(totalBalanceSavings);
+       
+       screen.displayMessageLine("\n\nCheque Account:");
+       screen.displayMessage(" - Available balance: "); 
+       screen.displayDollarAmount(availableBalanceCheque);
+       screen.displayMessage("\n - Total balance:     ");
+       screen.displayDollarAmount(totalBalanceCheque);
+       screen.displayMessageLine("");
+   }
 } // end class BalanceInquiry
 
 

@@ -15,7 +15,8 @@ public class ATM
    private static final int BALANCE_INQUIRY = 1;
    private static final int WITHDRAWAL = 2;
    private static final int DEPOSIT = 3;
-   private static final int EXIT = 4;
+   private static final int INTEREST_PERIOD = 4;
+   private static final int EXIT = 5;
 
    // no-argument ATM constructor initializes instance variables
    public ATM() 
@@ -78,7 +79,8 @@ public class ATM
       Transaction currentTransaction = null;
       
       boolean userExited = false; // user has not chosen to exit
-
+      
+    
       // loop while user has not chosen option to exit system
       while ( !userExited )
       {     
@@ -98,7 +100,11 @@ public class ATM
                   createTransaction( mainMenuSelection );
 
                currentTransaction.execute(); // execute transaction
-               break; 
+               break;
+            case INTEREST_PERIOD:
+                chooseInterestCalculationPeriod();
+            break;
+                
             case EXIT: // user chose to terminate session
                screen.displayMessageLine( "\nExiting the system..." );
                userExited = true; // this ATM session should end
@@ -110,15 +116,52 @@ public class ATM
          } // end switch
       } // end while
    } // end method performTransactions
+
+
+   private void chooseInterestCalculationPeriod() {
+      screen.displayMessageLine("\nChoose the interest calculation period:");
+      screen.displayMessageLine("1 - Annual (Year)");
+      screen.displayMessageLine("2 - Quarterly (Quarter)");
+      screen.displayMessageLine("3 - Monthly (Month)");
+      screen.displayMessage("\nEnter your choice: ");
+
+      int choice = keypad.getInput();
+      String period = "";
+
+      switch (choice) {
+         case 1:
+            period = "year";
+            break;
+         case 2:
+            period = "quarter";
+            break;
+         case 3:
+            period = "month";
+            break;
+         default:
+            screen.displayMessageLine("Invalid choice.");
+            return; 
+      }
+
+      // Get savings accounts through BankDatabase
+      SavingsAccount account = bankDatabase.getAuthenticatedSavingsAccount(currentAccountNumber);
+      if (account != null) {
+         account.applyInterest(period); 
+         screen.displayMessageLine("Interest applied for " + period + " successfully.");
+      } else {
+         screen.displayMessageLine("You do not have permission to access this account or account doesn't exist.");
+      }
+   }
    
-   // display the main menu and return an input selection
+   // display the main memu and return an input selection
    private int displayMainMenu()
    {
       screen.displayMessageLine( "\nMain menu:" );
       screen.displayMessageLine( "1 - View my balance" );
       screen.displayMessageLine( "2 - Withdraw cash" );
       screen.displayMessageLine( "3 - Deposit funds" );
-      screen.displayMessageLine( "4 - Exit\n" );
+      screen.displayMessageLine( "4 - Select Interest rate");
+      screen.displayMessageLine( "5 - Exit\n" );
       screen.displayMessage( "Enter a choice: " );
       return keypad.getInput(); // return user's selection
    } // end method displayMainMenu
@@ -147,6 +190,7 @@ public class ATM
 
       return temp; // return the newly created object
    } // end method createTransaction
+
 } // end class ATM
 
 

@@ -25,63 +25,62 @@ public class Withdrawal extends Transaction
 
    // perform transaction
    public void execute()
-   {
-      boolean cashDispensed = false; // cash was not dispensed yet
-      double availableBalance; // amount available for withdrawal
+{
+    boolean cashDispensed = false;
+    double availableBalance;
+    BankDatabase bankDatabase = getBankDatabase(); 
+    Screen screen = getScreen();
 
-      // get references to bank database and screen
-      BankDatabase bankDatabase = getBankDatabase(); 
-      Screen screen = getScreen();
+    // First select account type
+    screen.displayMessageLine("\nSelect account type:");
+    screen.displayMessageLine("1 - Savings Account");
+    screen.displayMessageLine("2 - Cheque Account");
+    screen.displayMessage("\nChoose an account: ");
+    
+    int accountType = keypad.getInput() - 1; // Convert to 0-based index
+    
+    if (accountType != 0 && accountType != 1) {
+        screen.displayMessageLine("\nInvalid account type. Transaction canceled.");
+        return;
+    }
 
-      // loop until cash is dispensed or the user cancels
-      do
-      {
-         // obtain a chosen withdrawal amount from the user 
-         amount = displayMenuOfAmounts();
-         
-         // check whether user chose a withdrawal amount or canceled
-         if ( amount != CANCELED )
-         {
-            // get available balance of account involved
+    do
+    {
+        amount = displayMenuOfAmounts();
+        
+        if (amount != CANCELED)
+        {
             availableBalance = 
-               bankDatabase.getAvailableBalance( getAccountNumber() );
+                bankDatabase.getAvailableBalance(getAccountNumber(), accountType);
       
-            // check whether the user has enough money in the account 
-            if ( amount <= availableBalance )
+            if (amount <= availableBalance)
             {   
-               // check whether the cash dispenser has enough money
-               if ( cashDispenser.isSufficientCashAvailable( amount ) )
-               {
-                  // update the account involved to reflect withdrawal
-                  bankDatabase.debit( getAccountNumber(), amount );
-                  
-                  cashDispenser.dispenseCash( amount ); // dispense cash
-                  cashDispensed = true; // cash was dispensed
-
-                  // instruct user to take cash
-                  screen.displayMessageLine( 
-                     "\nPlease take your cash now." );
-               } // end if
-               else // cash dispenser does not have enough cash
-                  screen.displayMessageLine( 
-                     "\nInsufficient cash available in the ATM." +
-                     "\n\nPlease choose a smaller amount." );
-            } // end if
-            else // not enough money available in user's account
+                if (cashDispenser.isSufficientCashAvailable(amount))
+                {
+                    bankDatabase.debit(getAccountNumber(), accountType, amount);
+                    cashDispenser.dispenseCash(amount);
+                    cashDispensed = true;
+                    screen.displayMessageLine("\nPlease take your cash now.");
+                }
+                else 
+                    screen.displayMessageLine(
+                        "\nInsufficient cash available in the ATM." +
+                        "\n\nPlease choose a smaller amount.");
+            }
+            else
             {
-               screen.displayMessageLine( 
-                  "\nInsufficient funds in your account." +
-                  "\n\nPlease choose a smaller amount." );
-            } // end else
-         } // end if
-         else // user chose cancel menu option 
-         {
-            screen.displayMessageLine( "\nCanceling transaction..." );
-            return; // return to main menu because user canceled
-         } // end else
-      } while ( !cashDispensed );
-
-   } // end method execute
+                screen.displayMessageLine(
+                    "\nInsufficient funds in your account." +
+                    "\n\nPlease choose a smaller amount.");
+            }
+        }
+        else
+        {
+            screen.displayMessageLine("\nCanceling transaction...");
+            return;
+        }
+    } while (!cashDispensed);
+}
 
    // display a menu of withdrawal amounts and the option to cancel;
    // return the chosen amount or 0 if the user chooses to cancel
