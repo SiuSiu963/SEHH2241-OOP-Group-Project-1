@@ -1,5 +1,3 @@
-import java.security.Key;
-
 public class BalanceTransfer extends Transaction {
     private final Keypad keypad;
     private final static int CANCELED = 3;
