@@ -1,27 +1,16 @@
-//Transfer.java
-
 import java.security.Key;
 
-public class BalanceTransfer extends Transaction
-{
-    private int amount;
-    private Keypad keypad;
-    private int toAccountNumber;
-
+public class BalanceTransfer extends Transaction {
+    private final Keypad keypad;
     private final static int CANCELED = 3;
 
-
-
-    public BalanceTransfer( int userAccountNumber, Screen atmScreen, BankDatabase atmBankDatabase, Keypad atmKeypad)
-    {
-        super ( userAccountNumber, atmScreen, atmBankDatabase);
-
+    public BalanceTransfer(int userAccountNumber, Screen atmScreen, BankDatabase atmBankDatabase, Keypad atmKeypad) {
+        super(userAccountNumber, atmScreen, atmBankDatabase);
         keypad = atmKeypad;
-
     }
 
+    @Override
     public void execute() {
-        double availableBalance;
         BankDatabase bankDatabase = getBankDatabase();
         Screen screen = getScreen();
      
@@ -36,94 +25,95 @@ public class BalanceTransfer extends Transaction
             screen.displayMessageLine("\nInvalid account type. Transaction canceled.");
             return;
         }
-        int[] returnedData = displayMenuOfTargetAccount();
-        
-        boolean amountCheckResult = false;
-        
-        if (returnedData[0] != CANCELED)
-        {
-            do {
-                screen.displayMessage("\nEnter amount to be transfer: ");
-                double amount = keypad.getInput();
-                amountCheckResult = transferAmountVaildator( amount );
 
-                availableBalance = bankDatabase.getAvailableBalance(getAccountNumber(), accountType);
-                if (amount <=  availableBalance)
-                {
-                    switch (returnedData[0]) {
-                        case 1:
-                            bankDatabase.debit(getAccountNumber(), accountType, amount);
-                            bankDatabase.credit(returnedData[1], 1, amount);
-                            break;
-                        case CANCELED:
-                            return;
-
-                        default:
-                            break;
-                    }
-                }
-            } while (!amountCheckResult);
-        } 
-        else {
-            return;
+        int[] transferData = displayMenuOfTargetAccount();
+        
+        if (transferData[0] != CANCELED) {
+            processTransfer(accountType, transferData);
         }
-
     }
 
-    private boolean transferAmountVaildator(double input_amount) {
+    private void processTransfer(int sourceAccountType, int[] transferData) {
         Screen screen = getScreen();
-        if (input_amount <= 0) {
-            screen.displayMessageLine("Inputed Amount invalid!");
-            return false;
-        } else {
-            return true;
-        }
-    };
+        BankDatabase bankDatabase = getBankDatabase();
+        boolean validAmount = false;
+        
+        do {
+            screen.displayMessage("\nEnter amount to transfer: ");
+            double amount = keypad.getInput();
+            validAmount = transferAmountValidator(amount);
 
+            if (validAmount) {
+                double availableBalance = bankDatabase.getAvailableBalance(getAccountNumber(), sourceAccountType);
+                if (amount <= availableBalance) {
+                    performTransfer(amount, sourceAccountType, transferData);
+                    screen.displayMessageLine("\nTransfer successful!");
+                    return;
+                } else {
+                    screen.displayMessageLine("\nInsufficient funds. Transaction canceled.");
+                    return;
+                }
+            }
+        } while (!validAmount);
+    }
+
+    private void performTransfer(double amount, int sourceAccountType, int[] transferData) {
+        BankDatabase bankDatabase = getBankDatabase();
+        
+        if (transferData[0] == 1) {
+            bankDatabase.debit(getAccountNumber(), sourceAccountType, amount);
+            bankDatabase.credit(transferData[1], 1, amount); // Assuming target is always a checking account
+        }
+    }
+
+    private boolean transferAmountValidator(double inputAmount) {
+        Screen screen = getScreen();
+        if (inputAmount <= 0) {
+            screen.displayMessageLine("Input amount invalid!");
+            return false;
+        }
+        return true;
+    }
 
     private int[] displayMenuOfTargetAccount() {
         int userChoice = 0;
         int targetAccount = 0;
-
-
         Screen screen = getScreen();
 
- 
         while (userChoice == 0) {
-           screen.displayMessageLine("Transfer Menu:");
-           screen.displayMessageLine("1 - Transfer to other account no."); 
-           screen.displayMessageLine("2 - Transfer to oversea bank account");
-           screen.displayMessageLine("3 - Cancel Transaction");
-           screen.displayMessage("\nEnter a choice: ");
-           int input = keypad.getInput();
-           userChoice = input;
+            screen.displayMessageLine("Transfer Menu:");
+            screen.displayMessageLine("1 - Transfer to other account no."); 
+            screen.displayMessageLine("2 - Transfer to oversea bank account");
+            screen.displayMessageLine("3 - Cancel Transaction");
+            screen.displayMessage("\nEnter a choice: ");
+            
+            userChoice = keypad.getInput();
 
-           switch ( input ) {
-            case 1: 
-                while (userChoice == 1 && targetAccount == 0) {
-                    screen.displayMessage("Enter the recipient account no. :");
-                    int inputAccountno = keypad.getInput();
-                    if ( inputAccountno != getAccountNumber() ) {
-                        targetAccount = inputAccountno;
-
-                    } else {
-                        screen.displayMessageLine("ERROR: You can't transfer to yourself!");
-                        targetAccount = 0;
+            switch (userChoice) {
+                case 1: 
+                    while (userChoice == 1 && targetAccount == 0) { //TODO 
+                        screen.displayMessage("Enter the recipient account no. :");
+                        int inputAccountNo = keypad.getInput();
+                        if (inputAccountNo != getAccountNumber()) {
+                            targetAccount = inputAccountNo;
+                        } else {
+                            screen.displayMessageLine("ERROR: You can't transfer to yourself!");
+                            targetAccount = 0;
+                        }
                     }
-                    
-                }
-                break;
-            case 2: //TODO
-            case CANCELED:
-                break;
-                
-            default:
-            screen.displayMessageLine( 
-                "\nInvalid selection. Try again." );
-           }
+                    break;
+                case 2: 
+                    screen.displayMessageLine("Overseas transfers are not yet implemented."); //By Jack - TODO: Maybe make a IBAN / Swift Transfer system? 
+                    userChoice = 0;
+                    break;
+                case CANCELED:
+                    break;
+                default:
+                    screen.displayMessageLine("\nInvalid selection. Try again.");
+                    userChoice = 0;
+            }
         }
 
-        int dataForTransfer[] = {userChoice, targetAccount};
-        return dataForTransfer;
+        return new int[]{userChoice, targetAccount};
     }
 }
