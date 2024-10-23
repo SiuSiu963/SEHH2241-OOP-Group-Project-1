@@ -3,35 +3,64 @@
 
 public class CashDispenser 
 {
-   // the default initial number of bills in the cash dispenser
+
    private final static int INITIAL_COUNT = 500;
-   private int count; // number of $20 bills remaining
-   
-   // no-argument CashDispenser constructor initializes count to default
+   private int count100; 
+   private int count500; 
+   private int count1000; 
+
+ 
    public CashDispenser()
    {
-      count = INITIAL_COUNT; // set count attribute to default
-   } // end CashDispenser constructor
+      count100 = INITIAL_COUNT; 
+      count500 = INITIAL_COUNT; 
+      count1000 = INITIAL_COUNT; 
+   } 
 
-   // simulates dispensing of specified amount of cash
-   public void dispenseCash( int amount )
+
+   public void dispenseCash(int amount)
    {
-      int billsRequired = amount / 20; // number of $20 bills required
-      count -= billsRequired; // update the count of bills
-   } // end method dispenseCash
+      if (amount % 100 != 0) {
+         throw new IllegalArgumentException("Amount must be a multiple of HKD 100.");
+      }
 
-   // indicates whether cash dispenser can dispense desired amount
-   public boolean isSufficientCashAvailable( int amount )
+      int bills1000 = amount / 1000; 
+      amount %= 1000;
+
+      int bills500 = amount / 500;
+      amount %= 500;
+
+      int bills100 = amount / 100; 
+
+      count1000 -= bills1000;
+      count500 -= bills500;
+      count100 -= bills100;
+   } 
+
+   public boolean isSufficientCashAvailable(int amount)
    {
-      int billsRequired = amount / 20; // number of $20 bills required
+      if (amount % 100 != 0) {
+         return false;
+      }
 
-      if ( count >= billsRequired  )
-         return true; // enough bills available
-      else 
-         return false; // not enough bills available
-   } // end method isSufficientCashAvailable
-} // end class CashDispenser
+      int bills1000 = amount / 1000;
+      amount %= 1000;
 
+      int bills500= amount / 500;
+      amount %= 500;
+
+      int bills100 = amount / 100;
+
+
+      if (count1000 >= bills1000 &&
+          count500 >= bills500&&
+          count100 >= bills100) {
+         return true; 
+      } else {
+         return false; 
+      }
+   } 
+}
 
 
 /**************************************************************************
