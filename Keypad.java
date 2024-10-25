@@ -13,9 +13,17 @@ public class Keypad
    } // end no-argument Keypad constructor
 
    // return an integer value entered by user 
-   public int getInput()
-   {
-      return input.nextInt(); // we assume that user enters an integer  
+   public int getInput() {
+       while (true) {
+           try {
+               return input.nextInt(); // attempt to read an integer
+           }
+           catch (java.util.InputMismatchException e) {
+               // Clear the invalid input from the scanner
+               input.nextLine();
+               System.out.println("Error: Please enter a valid integer.");
+           }
+       }
    } // end method getInput
 } // end class Keypad  
 
