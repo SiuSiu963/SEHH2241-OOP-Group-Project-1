@@ -133,17 +133,23 @@ public class Withdrawal extends Transaction
 
    //       ---Highlight---       //
    // To be written in the report //
-   private int CustomAmountMenu(){
-    Screen screen = getScreen();
-    int amount = 0;
-    boolean checks = ((amount % 100) != 0 || amount <= 0 );
-    do {
-        screen.displayMessage("\nEnter an amount multiple of 100: ");
-        amount = keypad.getInput();
-        if (checks){screen.displayMessageLine("Invalid amount.");}
-    } while (checks);
-
-        return amount;
+      private int CustomAmountMenu() {
+       Screen screen = getScreen();
+       int amount = 0;
+       boolean isInvalid;
+       
+       do {
+           screen.displayMessage("\nEnter an amount multiple of 100: ");
+           amount = keypad.getInput();
+           // Check is moved inside the loop and updated each time
+           isInvalid = ((amount % 100) != 0 || amount <= 0);
+           
+           if (isInvalid) {
+               screen.displayMessageLine("Invalid amount.");
+           }
+       } while (isInvalid);  // Loop continues while amount is invalid
+       
+       return amount;
    }
 } // end class Withdrawal
 
