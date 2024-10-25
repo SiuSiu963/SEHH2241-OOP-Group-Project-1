@@ -88,11 +88,18 @@ public class BankDatabase
    }
 
    // credit an amount to a specific type of Account (Savings or Cheque)
-   public void credit(int userAccountNumber, int accountType, double amount)
+public void credit(int accountNumber, double amount) 
    {
-      getAccount(userAccountNumber, accountType).credit(amount);
-   }
-
+    Account account = accounts.get(accountNumber);
+    if (account != null && amount > 0) 
+    {
+        account.credit(amount);
+    } 
+    else 
+    {
+        System.out.println("Account not found or invalid amount.");
+    }
+}
 
    // debit an amount from of Account with specified account number
    public void debit( int userAccountNumber, int accountType, double amount )
